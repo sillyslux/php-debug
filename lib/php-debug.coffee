@@ -220,7 +220,6 @@ module.exports = PhpDebug =
   toggleDebugging: ->
     @currentCodePointDecoration?.destroy()
     @settingsView?.close()
-    @settingsView?.destroy()
 
     if !@getUnifiedView().isVisible()
       @getUnifiedView().setVisible(true)
