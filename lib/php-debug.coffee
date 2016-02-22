@@ -1,7 +1,5 @@
 {CompositeDisposable} = require 'atom'
-{Emitter} = require 'event-kit'
 {$} = require 'atom-space-pen-views'
-events = require 'events'
 
 Codepoint = require './models/codepoint'
 Breakpoint = require './models/breakpoint'
@@ -12,7 +10,6 @@ helpers = require './helpers'
 PhpDebugStatusView = require './status/php-debug-status-view'
 
 module.exports = PhpDebug =
-  subscriptions: null
 
   config: require './settings.coffee'
 
