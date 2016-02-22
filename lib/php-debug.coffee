@@ -3,12 +3,12 @@
 {$} = require 'atom-space-pen-views'
 events = require 'events'
 
-Codepoint    = require './models/codepoint'
-Breakpoint    = require './models/breakpoint'
-BreakpointMarker    = require './models/breakpoint-marker'
-Watchpoint    = require './models/watchpoint'
+Codepoint = require './models/codepoint'
+Breakpoint = require './models/breakpoint'
+BreakpointMarker = require './models/breakpoint-marker'
+Watchpoint = require './models/watchpoint'
 GlobalContext = require './models/global-context'
-helpers        = require './helpers'
+helpers = require './helpers'
 PhpDebugStatusView = require './status/php-debug-status-view'
 
 module.exports = PhpDebug =
@@ -22,10 +22,8 @@ module.exports = PhpDebug =
 
     if !@GlobalContext
       @GlobalContext = new GlobalContext()
-    # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
-    @subscriptions = new CompositeDisposable
 
-    # Register command that toggles this view
+    @subscriptions = new CompositeDisposable
     @subscriptions.add atom.commands.add 'atom-workspace', 'php-debug:toggleBreakpoint': => @toggleBreakpoint()
     @subscriptions.add atom.commands.add 'atom-workspace', 'php-debug:breakpointSettings': => @breakpointSettings()
     @subscriptions.add atom.commands.add 'atom-workspace', 'php-debug:toggleDebugging': => @toggleDebugging()
@@ -39,6 +37,7 @@ module.exports = PhpDebug =
 
     Dbgp = require './engines/dbgp/dbgp'
     @dbgp = new Dbgp(context: @GlobalContext, serverPort: atom.config.get('php-debug.ServerPort'))
+
     @GlobalContext.onBreak (breakpoint) =>
       @doCodePoint(breakpoint)
 
@@ -92,27 +91,27 @@ module.exports = PhpDebug =
       @createGutters atom.config.get('php-debug.GutterBreakpointToggle'),true
 
     atom.contextMenu.add 'atom-text-editor': [{
-        label: 'Add to watch'
-        command: 'php-debug:addWatch'
-        shouldDisplay: =>
-            editor = atom.workspace.getActivePaneItem()
-            expression = editor?.getSelectedText()
-            if !!expression then return true else return false
-      },
-      {
-        label: 'Breakpoint settings'
-        command: 'php-debug:breakpointSettings'
-        shouldDisplay: =>
-          editor = atom.workspace.getActivePaneItem()
-          return false if !editor
-          range = editor.getSelectedBufferRange()
-          path = editor.getPath()
-          line = range.getRows()[0]+1
-          for breakpoint in @GlobalContext.getBreakpoints()
-            if breakpoint.getPath() == path && breakpoint.getLine() == line
-              return true
-          return false
-      }]
+      label: 'Add to watch'
+      command: 'php-debug:addWatch'
+      shouldDisplay: =>
+        editor = atom.workspace.getActivePaneItem()
+        expression = editor?.getSelectedText()
+        if !!expression then return true else return false
+    },
+    {
+      label: 'Breakpoint settings'
+      command: 'php-debug:breakpointSettings'
+      shouldDisplay: =>
+        editor = atom.workspace.getActivePaneItem()
+        return false if !editor
+        range = editor.getSelectedBufferRange()
+        path = editor.getPath()
+        line = range.getRows()[0]+1
+        for breakpoint in @GlobalContext.getBreakpoints()
+          if breakpoint.getPath() == path && breakpoint.getLine() == line
+            return true
+        return false
+    }]
 
     @GlobalContext.onSessionStart () =>
       @getUnifiedView().setConnected(true)
@@ -124,7 +123,6 @@ module.exports = PhpDebug =
     unless @unifiedView
       PhpDebugUnifiedView = require './unified/php-debug-unified-view'
       @unifiedView = new PhpDebugUnifiedView(context: @GlobalContext)
-
     return @unifiedView
 
   serialize: ->
@@ -141,31 +139,25 @@ module.exports = PhpDebug =
     @contextView.setDebugContext(data)
 
   doCodePoint: (point) ->
-      filepath = point.getPath()
-
-      filepath = helpers.remotePathToLocal(filepath)
-
-      atom.workspace.open(filepath,{searchAllPanes: true, activatePane:true}).then (editor) =>
-        if @currentCodePointDecoration
-          @currentCodePointDecoration.destroy()
-        line = point.getLine()
-        range = [[line-1, 0], [line-1, 0]]
-        marker = editor.markBufferRange(range, {invalidate: 'surround'})
-
-        type = point.getType?() ? 'generic'
-        @currentCodePointDecoration = editor.decorateMarker(marker, {type: 'line', class: 'debug-break-'+type})
-        editor.scrollToBufferPosition([line-1,0])
-      @GlobalContext.getCurrentDebugContext().syncCurrentContext(point.getStackDepth())
+    filepath = point.getPath()
+    filepath = helpers.remotePathToLocal(filepath)
+    atom.workspace.open(filepath,{searchAllPanes: true, activatePane:true}).then (editor) =>
+      if @currentCodePointDecoration
+        @currentCodePointDecoration.destroy()
+      line = point.getLine()
+      range = [[line-1, 0], [line-1, 0]]
+      marker = editor.markBufferRange(range, {invalidate: 'surround'})
+      type = point.getType?() ? 'generic'
+      @currentCodePointDecoration = editor.decorateMarker(marker, {type: 'line', class: 'debug-break-'+type})
+      editor.scrollToBufferPosition([line-1,0])
+    @GlobalContext.getCurrentDebugContext().syncCurrentContext(point.getStackDepth())
 
   addBreakpointMarker: (line, editor) ->
     gutter = editor.gutterWithName("php-debug-gutter")
     range = [[line-1, 0], [line-1, 0]]
-
     marker = new BreakpointMarker(editor,range,gutter)
     marker.decorate()
-
     return marker
-
 
   breakpointSettings: ->
     BreakpointSettingsView = require './breakpoint/breakpoint-settings-view'
