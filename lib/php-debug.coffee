@@ -46,31 +46,26 @@ module.exports = PhpDebug =
 
     @GlobalContext.onSessionEnd () =>
       @getUnifiedView().setConnected(false)
-      if @currentCodePointDecoration
-        @currentCodePointDecoration.destroy()
+      @currentCodePointDecoration?.destroy()
 
     @GlobalContext.onRunning () =>
-      if @currentCodePointDecoration
-        @currentCodePointDecoration.destroy()
+      @currentCodePointDecoration?.destroy()
 
     @GlobalContext.onWatchpointsChange () =>
-      if @GlobalContext.getCurrentDebugContext()
-        @GlobalContext.getCurrentDebugContext().syncCurrentContext(0)
+      @GlobalContext.getCurrentDebugContext()?.syncCurrentContext(0)
 
     @GlobalContext.onBreakpointsChange (event) =>
       if @GlobalContext.getCurrentDebugContext()
         if event.removed
           for breakpoint in event.removed
             @GlobalContext.getCurrentDebugContext().executeBreakpointRemove(breakpoint)
-            if breakpoint.getMarker()
-              breakpoint.getMarker().destroy()
+            breakpoint.getMarker()?.destroy()
         if event.added
           for breakpoint in event.added
             @GlobalContext.getCurrentDebugContext().executeBreakpoint(breakpoint)
       if event.removed
         for breakpoint in event.removed
-          if breakpoint.getMarker()
-            breakpoint.getMarker().destroy()
+          breakpoint.getMarker()?.destroy()
 
     atom.workspace.observeTextEditors (editor) =>
       if (atom.config.get('php-debug.GutterBreakpointToggle'))
@@ -223,12 +218,9 @@ module.exports = PhpDebug =
           breakpoint.setMarker(marker)
 
   toggleDebugging: ->
-    if @currentCodePointDecoration
-      @currentCodePointDecoration.destroy()
-
-    if @settingsView
-      @settingsView?.close()
-      @settingsView?.destroy()
+    @currentCodePointDecoration?.destroy()
+    @settingsView?.close()
+    @settingsView?.destroy()
 
     if !@getUnifiedView().isVisible()
       @getUnifiedView().setVisible(true)
@@ -255,22 +247,16 @@ module.exports = PhpDebug =
     @GlobalContext.addWatchpoint(w)
 
   run: ->
-    if @GlobalContext.getCurrentDebugContext()
-      @GlobalContext.getCurrentDebugContext()
-        .executeRun()
+    @GlobalContext.getCurrentDebugContext()?.executeRun()
 
   stepOver: ->
-    if @GlobalContext.getCurrentDebugContext()
-      @GlobalContext.getCurrentDebugContext()
-        .continue "step_over"
+    @GlobalContext.getCurrentDebugContext()?.continue "step_over"
+
   stepIn: ->
-    if @GlobalContext.getCurrentDebugContext()
-      @GlobalContext.getCurrentDebugContext()
-        .continue "step_into"
+    @GlobalContext.getCurrentDebugContext()?.continue "step_into"
+
   stepOut: ->
-    if @GlobalContext.getCurrentDebugContext()
-      @GlobalContext.getCurrentDebugContext()
-        .continue "step_out"
+    @GlobalContext.getCurrentDebugContext()?.continue "step_out"
 
   clearAllBreakpoints: ->
     @GlobalContext.setBreakpoints([])
